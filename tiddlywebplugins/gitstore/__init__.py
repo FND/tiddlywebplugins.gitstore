@@ -8,6 +8,8 @@ from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 
 from tiddlyweb.stores.text import Store as TextStore
+from tiddlyweb.util import LockError, write_lock, write_unlock, \
+        read_utf8_file, write_utf8_file
 
 
 class Store(TextStore):
@@ -18,3 +20,30 @@ class Store(TextStore):
             self.repo = Repo(self._root)
         except NotGitRepository:
             self.repo = Repo.init(self._root)
+
+    def tiddler_put(self, tiddler):
+        tiddler_filename = self._tiddler_base_filename(tiddler)
+
+        # the following section is copied almost verbatim from the text store
+        # TODO: refactor the text store for granular reusability
+        locked = 0
+        lock_attempts = 0
+        while not locked:
+            try:
+                lock_attempts = lock_attempts + 1
+                write_lock(tiddler_filename)
+                locked = 1
+            except LockError, exc:
+                if lock_attempts > 4:
+                    raise StoreLockError(exc)
+                time.sleep(.1)
+
+        # Protect against incoming tiddlers that have revision
+        # set. Since we are putting a new one, we want the system
+        # to calculate.
+        tiddler.revision = None
+
+        self.serializer.object = tiddler
+        write_utf8_file(tiddler_filename, self.serializer.to_string())
+        write_unlock(tiddler_filename)
+        #tiddler.revision = revision # TODO
