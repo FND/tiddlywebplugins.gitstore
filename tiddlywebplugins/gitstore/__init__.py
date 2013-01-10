@@ -47,10 +47,18 @@ class Store(TextStore):
         write_utf8_file(tiddler_filename, self.serializer.to_string())
         write_unlock(tiddler_filename)
 
-        relative_path = tiddler_filename.replace(self._root, "")[1:] # TODO: use os.path.relpath
+        host = self.environ['tiddlyweb.config']['server_host']
+        host = '%s:%s' % (host['host'], host['port'])
+        if host.endswith(':80'): # TODO: use proper URI parsing instead
+            host = host[:-3]
+        user = self.environ['tiddlyweb.usersign']['name']
+        author = '%s <%s@%s>' % (user, user, host)
+        committer = 'tiddlyweb <tiddlyweb@%s>' % host
+        message = 'tiddler put' # XXX: too technical?
+
+        relative_path = tiddler_filename.replace(self._root, '')[1:] # TODO: use os.path.relpath
         self.repo.stage([relative_path])
-        commit_id = self.repo.do_commit("<message>",
-                author="user@tiddlyweb",
-                committer="tiddlyweb@localhost") # TODO: use meaningful values (e.g. user and host)
+        commit_id = self.repo.do_commit(message, author=author,
+                committer=committer)
 
         tiddler.revision = commit_id # TODO: use abbreviated commit hash

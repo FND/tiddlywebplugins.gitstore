@@ -1,22 +1,31 @@
 import os
 import shutil
+import subprocess
 import tempfile
 
 from tiddlyweb.model.bag import Bag
 from tiddlyweb.model.tiddler import Tiddler
-
-from tiddlywebplugins.utils import get_store
+from tiddlyweb.store import Store
 
 
 def setup_module(module):
     module.TMPDIR = tempfile.mkdtemp()
     module.CONFIG = {
+        'server_host': {
+            'scheme':'http',
+            'host':'example.com',
+            'port': 80
+        },
         'server_store': ['tiddlywebplugins.gitstore', {
             'store_root': os.path.join(TMPDIR, 'test_store')
-        }],
+        }]
     }
-    module.STORE = get_store(CONFIG)
-    module.ENVIRON = { 'tiddlyweb.config': CONFIG }
+    module.ENVIRON = {
+        'tiddlyweb.config': CONFIG,
+        'tiddlyweb.usersign': { 'name': 'JohnDoe' }
+    }
+    module.STORE = Store(CONFIG['server_store'][0], CONFIG['server_store'][1],
+            ENVIRON)
 
 
 def teardown_module(module):
@@ -60,3 +69,7 @@ def test_tiddler_put(): # TODO: does not belong into this module
         contents = fh.read()
         assert 'tags: foo bar' in contents
         assert tiddler.text in contents
+    info = subprocess.check_output(['git', 'log', '-n1',
+            '--format=%h %ae %ce: %s'], cwd=store_root)
+    assert info.strip()[8:] == \
+            'JohnDoe@example.com tiddlyweb@example.com: tiddler put'
