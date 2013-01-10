@@ -42,6 +42,8 @@ def test_tiddler_put(): # TODO: does not belong into this module
 
     bag = Bag('alpha')
     tiddler = Tiddler('Foo', bag.name)
+    tiddler.text = 'lorem ipsum\ndolor sit amet'
+    tiddler.tags = ['foo', 'bar']
 
     STORE.put(bag)
 
@@ -53,3 +55,8 @@ def test_tiddler_put(): # TODO: does not belong into this module
 
     tiddler_file = os.path.join(bag_dir, 'tiddlers', 'Foo')
     assert os.path.isfile(tiddler_file)
+    assert len(tiddler.revision) == 40
+    with open(tiddler_file) as fh:
+        contents = fh.read()
+        assert 'tags: foo bar' in contents
+        assert tiddler.text in contents

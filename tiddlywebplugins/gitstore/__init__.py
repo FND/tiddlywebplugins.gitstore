@@ -46,4 +46,11 @@ class Store(TextStore):
         self.serializer.object = tiddler
         write_utf8_file(tiddler_filename, self.serializer.to_string())
         write_unlock(tiddler_filename)
-        #tiddler.revision = revision # TODO
+
+        relative_path = tiddler_filename.replace(self._root, "")[1:] # TODO: use os.path.relpath
+        self.repo.stage([relative_path])
+        commit_id = self.repo.do_commit("<message>",
+                author="user@tiddlyweb",
+                committer="tiddlyweb@localhost") # TODO: use meaningful values (e.g. user and host)
+
+        tiddler.revision = commit_id # TODO: use abbreviated commit hash
