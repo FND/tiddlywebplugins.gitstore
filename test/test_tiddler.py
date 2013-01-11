@@ -39,7 +39,7 @@ def test_tiddler_put():
         assert 'tags: foo bar' in contents
         assert tiddler.text in contents
     info = subprocess.check_output(['git', 'log', '-n1',
-            '--format=%h %ae %ce: %s'], cwd=store_root)
-    assert info.strip()[8:] == \
+            '--format=%ae %ce: %s'], cwd=store_root)
+    assert info.strip() == \
             'JohnDoe@example.com tiddlyweb@example.com: tiddler put'
 
