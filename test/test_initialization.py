@@ -6,11 +6,11 @@ from . import store_setup, store_teardown
 
 
 def setup_module(module):
-    store_setup(module)
+    _, module.TMPDIR = store_setup()
 
 
 def teardown_module(module):
-    store_teardown(module)
+    store_teardown(module.TMPDIR)
 
 
 def test_store_initialization():
