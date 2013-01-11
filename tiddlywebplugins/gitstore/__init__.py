@@ -4,6 +4,8 @@ TiddlyWeb store implementation using Git - based on the default text store, this
 store uses Git to keep track of tiddler revisions
 """
 
+import subprocess
+
 from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 
@@ -20,6 +22,16 @@ class Store(TextStore):
             self.repo = Repo(self._root)
         except NotGitRepository:
             self.repo = Repo.init(self._root)
+
+    def tiddler_get(self, tiddler):
+        tiddler_filename = self._tiddler_base_filename(tiddler)
+        tiddler = self._read_tiddler_file(tiddler, tiddler_filename)
+
+        revision = subprocess.check_output(['git', 'log', '-n1', '--format=%H'],
+                cwd=self._root) # TODO: should be handled via Dulwich
+        tiddler.revision = revision.strip()
+
+        return tiddler
 
     def tiddler_put(self, tiddler):
         tiddler_filename = self._tiddler_base_filename(tiddler)
