@@ -78,10 +78,7 @@ class Store(TextStore):
 def run(cmd, *args, **kwargs):
     """
     execute a command, passing `args` to that command and using `kwargs` for
-    configuration of `Popen`
+    configuration of `Popen`, returning the respective output
     """
     args = [cmd] + list(args)
-    try:
-        return subprocess.check_output(args, **kwargs)
-    except AttributeError: # Python <2.7
-        return subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]
+    return subprocess.check_output(args, **kwargs)
