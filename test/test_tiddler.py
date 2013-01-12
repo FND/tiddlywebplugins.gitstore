@@ -4,6 +4,8 @@ import subprocess
 from tiddlyweb.model.bag import Bag
 from tiddlyweb.model.tiddler import Tiddler
 
+from tiddlywebplugins.gitstore import run
+
 from . import store_setup, store_teardown
 
 
@@ -38,8 +40,7 @@ def test_tiddler_put():
         contents = fh.read()
         assert 'tags: foo bar' in contents
         assert tiddler.text in contents
-    info = subprocess.check_output(['git', 'log', '-n1',
-            '--format=%ae %ce: %s'], cwd=store_root)
+    info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
             'JohnDoe@example.com tiddlyweb@example.com: tiddler put'
 

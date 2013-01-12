@@ -27,8 +27,7 @@ class Store(TextStore):
         tiddler_filename = self._tiddler_base_filename(tiddler)
         tiddler = self._read_tiddler_file(tiddler, tiddler_filename)
 
-        revision = subprocess.check_output(['git', 'log', '-n1', '--format=%H'],
-                cwd=self._root) # TODO: should be handled via Dulwich
+        revision = run('git', 'log', '-n1', '--format=%H', cwd=self._root) # TODO: should be handled via Dulwich
         tiddler.revision = revision.strip()
 
         return tiddler
@@ -74,3 +73,15 @@ class Store(TextStore):
                 committer=committer)
 
         tiddler.revision = commit_id # TODO: use abbreviated commit hash
+
+
+def run(cmd, *args, **kwargs):
+    """
+    execute a command, passing `args` to that command and using `kwargs` for
+    configuration of `Popen`
+    """
+    args = [cmd] + list(args)
+    try:
+        return subprocess.check_output(args, **kwargs)
+    except AttributeError: # Python <2.7
+        return subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]
