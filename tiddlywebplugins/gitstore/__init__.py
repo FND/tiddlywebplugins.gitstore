@@ -4,14 +4,18 @@ TiddlyWeb store implementation using Git - based on the default text store, this
 store uses Git to keep track of tiddler revisions
 """
 
+import time
 import subprocess
 
 from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 
+from tiddlyweb.store import StoreLockError
 from tiddlyweb.stores.text import Store as TextStore
 from tiddlyweb.util import LockError, write_lock, write_unlock, \
         read_utf8_file, write_utf8_file
+
+from .serializer import FullTextSerializer
 
 
 class Store(TextStore):
@@ -23,7 +27,7 @@ class Store(TextStore):
         except NotGitRepository:
             self.repo = Repo.init(self._root)
 
-    def tiddler_get(self, tiddler):
+    def tiddler_get(self, tiddler): # XXX: prone to race condition due to separate Git operation?!
         tiddler_filename = self._tiddler_base_filename(tiddler)
         tiddler = self._read_tiddler_file(tiddler, tiddler_filename)
 
@@ -49,13 +53,26 @@ class Store(TextStore):
                     raise StoreLockError(exc)
                 time.sleep(.1)
 
-        # Protect against incoming tiddlers that have revision
-        # set. Since we are putting a new one, we want the system
-        # to calculate.
+        # Protect against incoming tiddlers that have revision set. Since we are
+        # putting a new one, we want the system to calculate.
         tiddler.revision = None
 
-        self.serializer.object = tiddler
-        write_utf8_file(tiddler_filename, self.serializer.to_string())
+        # store original creator and created
+        try:
+            # cache fields to work around deserialization side-effects
+            modifier = tiddler.modifier
+            modified = tiddler.modified
+
+            current_revision = self._read_tiddler_file(tiddler, tiddler_filename)
+
+            # restore fields
+            tiddler.modifier = modifier
+            tiddler.modified = modified
+        except IOError, exc: # first revision
+            pass # Tiddler uses modifie{r,d} as fallback for creat{or,ed}
+
+        write_utf8_file(tiddler_filename,
+                FullTextSerializer().tiddler_as(tiddler))
         write_unlock(tiddler_filename)
 
         host = self.environ['tiddlyweb.config']['server_host']

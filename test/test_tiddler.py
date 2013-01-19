@@ -1,4 +1,5 @@
 import os
+import time
 import subprocess
 
 from tiddlyweb.model.bag import Bag
@@ -60,4 +61,23 @@ def test_tiddler_get():
 
 
 def test_tiddler_creation_info():
-    pass # TODO: ensure ensure original creator/created is retained
+    bag = Bag('alpha')
+    STORE.put(bag)
+
+    tiddler = Tiddler('Foo', bag.name)
+    tiddler.text = 'lorem ipsum'
+    tiddler.modifier = 'john'
+    STORE.put(tiddler)
+
+    time.sleep(1) # tiddler timestamp resolution is 1s
+
+    tiddler = Tiddler('Foo', bag.name)
+    tiddler.text = 'lorem ipsum\ndolor sit amet'
+    tiddler.modifier = 'jane'
+    STORE.put(tiddler)
+
+    tiddler = Tiddler('Foo', bag.name)
+    tiddler = STORE.get(tiddler)
+    assert tiddler.creator == 'john'
+    assert tiddler.modifier == 'jane'
+    assert tiddler.created != tiddler.modified
