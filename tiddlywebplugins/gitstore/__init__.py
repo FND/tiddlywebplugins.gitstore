@@ -69,7 +69,8 @@ class Store(TextStore):
             tiddler.modifier = modifier
             tiddler.modified = modified
         except IOError, exc: # first revision
-            pass # Tiddler uses modifie{r,d} as fallback for creat{or,ed}
+            tiddler.creator = tiddler.modifier
+            tiddler.created = tiddler.modified
 
         write_utf8_file(tiddler_filename,
                 FullTextSerializer().tiddler_as(tiddler))

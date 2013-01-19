@@ -18,6 +18,20 @@ def teardown_module(module):
     store_teardown(module.TMPDIR)
 
 
+def test_tiddler_get():
+    bag = Bag('alpha')
+    STORE.put(bag)
+
+    tiddler = Tiddler('Foo', bag.name)
+    tiddler.text = 'lorem ipsum\ndolor sit amet'
+    tiddler.tags = ['foo', 'bar']
+    STORE.put(tiddler)
+
+    stored_tiddler = Tiddler('Foo', bag.name)
+    stored_tiddler = STORE.get(stored_tiddler)
+    assert stored_tiddler.revision == tiddler.revision
+
+
 def test_tiddler_put():
     store_root = os.path.join(TMPDIR, 'test_store')
 
@@ -46,20 +60,6 @@ def test_tiddler_put():
             'JohnDoe@example.com tiddlyweb@example.com: tiddler put'
 
 
-def test_tiddler_get():
-    bag = Bag('alpha')
-    STORE.put(bag)
-
-    tiddler = Tiddler('Foo', bag.name)
-    tiddler.text = 'lorem ipsum\ndolor sit amet'
-    tiddler.tags = ['foo', 'bar']
-    STORE.put(tiddler)
-
-    same_tiddler = Tiddler('Foo', bag.name)
-    same_tiddler = STORE.get(same_tiddler)
-    assert same_tiddler.revision == tiddler.revision
-
-
 def test_tiddler_creation_info():
     bag = Bag('alpha')
     STORE.put(bag)
@@ -81,3 +81,5 @@ def test_tiddler_creation_info():
     assert tiddler.creator == 'john'
     assert tiddler.modifier == 'jane'
     assert tiddler.created != tiddler.modified
+    assert len(tiddler.created) == 14
+    assert len(tiddler.fields) == 0
