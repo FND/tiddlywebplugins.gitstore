@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 
 from tiddlyweb.model.bag import Bag
@@ -56,7 +57,7 @@ def test_tiddler_put():
 
     tiddler_file = os.path.join(bag_dir, 'tiddlers', 'Foo')
     assert os.path.isfile(tiddler_file)
-    assert len(tiddler.revision) == 40
+    assert re.match('^[a-z0-9]{40}$', tiddler.revision)
     with open(tiddler_file) as fh:
         contents = fh.read()
         assert 'tags: foo bar' in contents
