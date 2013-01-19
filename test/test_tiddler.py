@@ -1,5 +1,4 @@
 import os
-import time
 import subprocess
 
 from tiddlyweb.model.bag import Bag
@@ -102,13 +101,13 @@ def test_tiddler_creation_info():
     tiddler = Tiddler('Foo', bag.name)
     tiddler.text = 'lorem ipsum'
     tiddler.modifier = 'john'
+    tiddler.modified = '20130119150632'
     STORE.put(tiddler)
-
-    time.sleep(1) # tiddler timestamp resolution is 1s
 
     tiddler = Tiddler('Foo', bag.name)
     tiddler.text = 'lorem ipsum\ndolor sit amet'
     tiddler.modifier = 'jane'
+    tiddler.modified = '20130119151021'
     STORE.put(tiddler)
 
     tiddler = Tiddler('Foo', bag.name)
