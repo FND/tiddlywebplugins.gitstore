@@ -4,6 +4,7 @@ TiddlyWeb store implementation using Git - based on the default text store, this
 store uses Git to keep track of tiddler revisions
 """
 
+import os
 import time
 import subprocess
 
@@ -27,7 +28,7 @@ class Store(TextStore):
         except NotGitRepository:
             self.repo = Repo.init(self._root)
 
-    def tiddler_get(self, tiddler): # XXX: prone to race condition due to separate Git operation?!
+    def tiddler_get(self, tiddler): # XXX: prone to race condition due to separate Git operation
         tiddler_filename = self._tiddler_base_filename(tiddler)
         try:
             tiddler = self._read_tiddler_file(tiddler, tiddler_filename)
@@ -79,6 +80,25 @@ class Store(TextStore):
                 FullTextSerializer().tiddler_as(tiddler))
         write_unlock(tiddler_filename)
 
+        commit_id = self._commit(tiddler_filename, 'tiddler put') # XXX: message too technical?
+        tiddler.revision = commit_id # TODO: use abbreviated commit hash
+
+    def tiddler_delete(self, tiddler): # XXX: prone to race condition due to separate Git operation
+        tiddler_filename = self._tiddler_base_filename(tiddler)
+        if not os.path.exists(tiddler_filename):
+            raise NoTiddlerError('%s not present' % tiddler_filename)
+
+        os.remove(tiddler_filename)
+
+        self._commit(tiddler_filename, 'tiddler delete') # XXX: message too technical?
+
+
+    def _commit(self, filename, message):
+        """
+        commit changes to given file
+
+        returns the new commit's hash
+        """
         host = self.environ['tiddlyweb.config']['server_host']
         host = '%s:%s' % (host['host'], host['port'])
         if host.endswith(':80'): # TODO: use proper URI parsing instead
@@ -86,14 +106,10 @@ class Store(TextStore):
         user = self.environ['tiddlyweb.usersign']['name']
         author = '%s <%s@%s>' % (user, user, host)
         committer = 'tiddlyweb <tiddlyweb@%s>' % host
-        message = 'tiddler put' # XXX: too technical?
 
-        relative_path = tiddler_filename.replace(self._root, '')[1:] # TODO: use os.path.relpath
+        relative_path = filename.replace(self._root, '')[1:] # TODO: use os.path.relpath
         self.repo.stage([relative_path])
-        commit_id = self.repo.do_commit(message, author=author,
-                committer=committer)
-
-        tiddler.revision = commit_id # TODO: use abbreviated commit hash
+        return self.repo.do_commit(message, author=author, committer=committer)
 
 
 def run(cmd, *args, **kwargs):

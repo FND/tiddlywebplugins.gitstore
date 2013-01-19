@@ -66,6 +66,34 @@ def test_tiddler_put():
     assert info.strip() == \
             'JohnDoe@example.com tiddlyweb@example.com: tiddler put'
 
+def test_tiddler_delete():
+    store_root = os.path.join(TMPDIR, 'test_store')
+
+    bag = Bag('alpha')
+    STORE.put(bag)
+
+    tiddler = Tiddler('Foo', bag.name)
+    tiddler.text = 'lipsum'
+    STORE.put(tiddler)
+
+    tiddler = Tiddler('Foo', bag.name)
+    tiddler.text = 'lorem ipsum'
+    STORE.put(tiddler)
+
+    tiddler = Tiddler('Foo', bag.name)
+    STORE.delete(tiddler)
+
+    bag_dir = os.path.join(store_root, 'bags', 'alpha')
+    tiddler_file = os.path.join(bag_dir, 'tiddlers', 'Foo')
+    assert not os.path.isfile(tiddler_file)
+    info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
+    assert info.strip() == \
+            'JohnDoe@example.com tiddlyweb@example.com: tiddler delete'
+
+    missing_tiddler = Tiddler('Bar', bag.name)
+    with raises(NoTiddlerError):
+        STORE.delete(missing_tiddler)
+
 
 def test_tiddler_creation_info():
     bag = Bag('alpha')
