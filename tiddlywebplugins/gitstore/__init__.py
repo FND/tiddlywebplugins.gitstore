@@ -10,7 +10,7 @@ import subprocess
 from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 
-from tiddlyweb.store import StoreLockError
+from tiddlyweb.store import StoreLockError, NoTiddlerError
 from tiddlyweb.stores.text import Store as TextStore
 from tiddlyweb.util import LockError, write_lock, write_unlock, \
         read_utf8_file, write_utf8_file
@@ -29,7 +29,10 @@ class Store(TextStore):
 
     def tiddler_get(self, tiddler): # XXX: prone to race condition due to separate Git operation?!
         tiddler_filename = self._tiddler_base_filename(tiddler)
-        tiddler = self._read_tiddler_file(tiddler, tiddler_filename)
+        try:
+            tiddler = self._read_tiddler_file(tiddler, tiddler_filename)
+        except IOError, exc:
+            raise NoTiddlerError('no tiddler for %s: %s' % (tiddler.title, exc))
 
         revision = run('git', 'log', '-n1', '--format=%H', cwd=self._root) # TODO: should be handled via Dulwich
         tiddler.revision = revision.strip()

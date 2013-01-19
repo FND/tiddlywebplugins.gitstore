@@ -4,8 +4,11 @@ import subprocess
 
 from tiddlyweb.model.bag import Bag
 from tiddlyweb.model.tiddler import Tiddler
+from tiddlyweb.store import NoTiddlerError
 
 from tiddlywebplugins.gitstore import run
+
+from pytest import raises
 
 from . import store_setup, store_teardown
 
@@ -30,6 +33,10 @@ def test_tiddler_get():
     stored_tiddler = Tiddler('Foo', bag.name)
     stored_tiddler = STORE.get(stored_tiddler)
     assert stored_tiddler.revision == tiddler.revision
+
+    missing_tiddler = Tiddler('Bar', bag.name)
+    with raises(NoTiddlerError):
+        STORE.get(missing_tiddler)
 
 
 def test_tiddler_put():
