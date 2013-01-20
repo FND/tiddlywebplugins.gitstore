@@ -67,7 +67,7 @@ class Store(TextStore):
             modifier = tiddler.modifier
             modified = tiddler.modified
 
-            current_revision = self._read_tiddler_file(tiddler, tiddler_filename)
+            current_revision = self._read_tiddler_file(tiddler, tiddler_filename) # FIXME: dangerously side-effecty
 
             # restore fields
             tiddler.modifier = modifier

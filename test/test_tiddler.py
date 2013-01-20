@@ -44,7 +44,7 @@ def test_tiddler_put():
 
     bag = Bag('alpha')
     tiddler = Tiddler('Foo', bag.name)
-    tiddler.text = 'lorem ipsum\ndolor sit amet'
+    tiddler.text = 'lorem ipsum'
     tiddler.tags = ['foo', 'bar']
 
     STORE.put(bag)
@@ -61,10 +61,20 @@ def test_tiddler_put():
     with open(tiddler_file) as fh:
         contents = fh.read()
         assert 'tags: foo bar' in contents
-        assert tiddler.text in contents
+        assert 'lorem ipsum' in contents
     info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
             'JohnDoe@example.com tiddlyweb@example.com: tiddler put'
+
+    # ensure there are no undesirable side-effects
+
+    tiddler = Tiddler('Foo', bag.name)
+    tiddler.text = 'lorem ipsum\ndolor sit amet'
+    tiddler.tags = ['foo']
+    STORE.put(tiddler)
+
+    assert tiddler.text == 'lorem ipsum\ndolor sit amet'
+    assert tiddler.tags == ['foo']
 
 def test_tiddler_delete():
     store_root = os.path.join(TMPDIR, 'test_store')
