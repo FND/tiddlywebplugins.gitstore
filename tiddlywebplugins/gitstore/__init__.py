@@ -67,11 +67,6 @@ class Store(TextStore):
             modifier = tiddler.modifier
             modified = tiddler.modified
 
-            contents = read_utf8_file(tiddler_filename)
-            previous_revision = Tiddler(tiddler.title, tiddler.bag)
-            previous_revision = self.serializer.serialization. \
-                    as_tiddler(previous_revision, contents)
-
             # restore fields
             tiddler.modifier = modifier
             tiddler.modified = modified
