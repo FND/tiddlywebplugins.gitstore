@@ -67,7 +67,7 @@ class Store(TextStore):
             modifier = tiddler.modifier
             modified = tiddler.modified
 
-
+            previous_revision_contents = read_utf8_file(tiddler_filename)
 
             # restore fields
             tiddler.modifier = modifier
