@@ -31,6 +31,10 @@ class Store(TextStore):
 
     def tiddler_get(self, tiddler): # XXX: prone to race condition due to separate Git operation
         tiddler_filename = self._tiddler_base_filename(tiddler)
+
+        if tiddler.revision:
+            return self._get_tiddler_revision(tiddler, tiddler_filename)
+
         try:
             tiddler = self._read_tiddler_file(tiddler, tiddler_filename)
         except IOError, exc:
@@ -89,6 +93,18 @@ class Store(TextStore):
         self._commit(tiddler_filename, 'tiddler delete') # XXX: message too technical?
 
 
+    def _get_tiddler_revision(self, tiddler, tiddler_filename):
+        relative_path = os.path.relpath(tiddler_filename, start=self._root)
+        target = '%s:%s' % (tiddler.revision, relative_path)
+        try:
+            tiddler_string = run('git', 'show', target, cwd=self._root) # TODO: should be handled via Dulwich
+        except subprocess.CalledProcessError, exc:
+            raise NoTiddlerError('no revision %s for %s: %s' %
+                    (tiddler.revision, tiddler.title, exc))
+
+        self.serializer.object = Tiddler(tiddler.title, tiddler.bag)
+        return self.serializer.from_string(tiddler_string)
+
     def _commit(self, filename, message):
         """
         commit changes to given file
@@ -103,7 +119,7 @@ class Store(TextStore):
         author = '%s <%s@%s>' % (user, user, host)
         committer = 'tiddlyweb <tiddlyweb@%s>' % host
 
-        relative_path = filename.replace(self._root, '')[1:] # TODO: use os.path.relpath
+        relative_path = os.path.relpath(filename, start=self._root)
         self.repo.stage([relative_path])
         return self.repo.do_commit(message, author=author, committer=committer)
 

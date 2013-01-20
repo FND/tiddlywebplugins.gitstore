@@ -39,6 +39,42 @@ def test_tiddler_get():
         STORE.get(missing_tiddler)
 
 
+def test_revision_get():
+    bag = Bag('alpha')
+    STORE.put(bag)
+
+    # create a bunch of revisions
+    tiddler_data = [
+        { 'text': 'hello world', 'tags': ['foo'] },
+        { 'text': 'lorem ipsum', 'tags': ['foo', 'bar'] },
+        { 'text': 'lorem ipsum\ndolor sit amet', 'tags': [] }
+    ]
+    for tid in tiddler_data:
+        tiddler = Tiddler('Foo', bag.name)
+        tiddler.text = tid['text']
+        tiddler.tags = tid['tags']
+        STORE.put(tiddler)
+        tid['revision'] = tiddler.revision
+
+    tiddler = Tiddler('Foo', bag.name)
+    tiddler.revision = None
+    tiddler = STORE.get(tiddler)
+    assert tiddler.text == 'lorem ipsum\ndolor sit amet'
+    assert len(tiddler.tags) == 0
+
+    for i, tid in enumerate(tiddler_data):
+        tiddler = Tiddler('Foo', bag.name)
+        tiddler.revision = tid['revision']
+        tiddler = STORE.get(tiddler)
+        assert tiddler.text == tid['text']
+        assert len(tiddler.tags) == len(tid['tags'])
+
+    tiddler = Tiddler('Foo', bag.name)
+    tiddler.revision = 'N/A'
+    with raises(NoTiddlerError):
+        STORE.get(tiddler)
+
+
 def test_tiddler_put():
     store_root = os.path.join(TMPDIR, 'test_store')
 
