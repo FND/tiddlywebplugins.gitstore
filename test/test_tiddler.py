@@ -76,6 +76,7 @@ def test_tiddler_put():
     assert tiddler.text == 'lorem ipsum\ndolor sit amet'
     assert tiddler.tags == ['foo']
 
+
 def test_tiddler_delete():
     store_root = os.path.join(TMPDIR, 'test_store')
 

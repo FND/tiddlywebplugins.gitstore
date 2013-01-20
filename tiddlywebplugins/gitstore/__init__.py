@@ -11,6 +11,7 @@ import subprocess
 from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 
+from tiddlyweb.model.tiddler import Tiddler
 from tiddlyweb.store import StoreLockError, NoTiddlerError
 from tiddlyweb.stores.text import Store as TextStore
 from tiddlyweb.util import LockError, write_lock, write_unlock, \
@@ -63,15 +64,10 @@ class Store(TextStore):
 
         # store original creator and created
         try:
-            # cache fields to work around deserialization side-effects
-            modifier = tiddler.modifier
-            modified = tiddler.modified
-
-            current_revision = self._read_tiddler_file(tiddler, tiddler_filename) # FIXME: dangerously side-effecty
-
-            # restore fields
-            tiddler.modifier = modifier
-            tiddler.modified = modified
+            current_rev = Tiddler(tiddler.title, tiddler.bag)
+            current_rev = self._read_tiddler_file(current_rev, tiddler_filename)
+            tiddler.creator = current_rev.creator
+            tiddler.created = current_rev.created
         except IOError, exc: # first revision
             tiddler.creator = tiddler.modifier
             tiddler.created = tiddler.modified

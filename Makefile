@@ -5,7 +5,7 @@ readme:
 			print pkg.__doc__.strip()" > README
 
 test: clean
-	py.test -s --tb=short test
+	py.test -x -s --tb=short test
 
 clean:
 	find . -name "*.pyc" | xargs rm || true
