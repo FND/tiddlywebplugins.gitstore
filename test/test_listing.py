@@ -20,12 +20,10 @@ def teardown_module(module):
 
 
 def test_list_tiddlers():
-    names = ['Foo', 'Bar', 'Baz']
-
     bag = Bag('alpha')
     STORE.put(bag)
 
-    for title in names:
+    for title in ['Foo', 'Bar', 'Baz']:
         tiddler = Tiddler(title, bag.name)
         STORE.put(tiddler)
 
@@ -33,8 +31,9 @@ def test_list_tiddlers():
     tiddlers = STORE.list_bag_tiddlers(bag)
     titles = [tiddler.title for tiddler in tiddlers]
 
-    for title in names:
-        assert title in titles
+    assert 'Foo' in titles
+    assert 'Bar' in titles
+    assert 'Baz' in titles
 
     bag = Bag('bravo')
     tiddlers = STORE.list_bag_tiddlers(bag) # XXX: this should raise already!?
