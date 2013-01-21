@@ -7,12 +7,13 @@ store uses Git to keep track of tiddler revisions
 import os
 import time
 import subprocess
+import urllib
 
 from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 
 from tiddlyweb.model.tiddler import Tiddler
-from tiddlyweb.store import StoreLockError, NoTiddlerError
+from tiddlyweb.store import StoreLockError, NoBagError, NoTiddlerError
 from tiddlyweb.stores.text import Store as TextStore
 from tiddlyweb.util import LockError, write_lock, write_unlock, \
         read_utf8_file, write_utf8_file
@@ -29,6 +30,20 @@ class Store(TextStore):
         except NotGitRepository:
             self.repo = Repo.init(self._root)
 
+    def list_bag_tiddlers(self, bag):
+        tiddlers_dir = self._tiddlers_dir(bag.name)
+
+        try:
+            tiddler_files = (filename for filename
+                    in self._files_in_dir(tiddlers_dir))
+        except (IOError, OSError), exc:
+            raise NoBagError('unable to list tiddlers in bag "%s": %s' %
+                    (bag.name, exc))
+
+        for filename in tiddler_files:
+            title = urllib.unquote(filename).decode('utf-8')
+            yield Tiddler(title, bag.name)
+
     def tiddler_get(self, tiddler): # XXX: prone to race condition due to separate Git operation
         tiddler_filename = self._tiddler_base_filename(tiddler)
 
@@ -38,7 +53,8 @@ class Store(TextStore):
         try:
             tiddler = self._read_tiddler_file(tiddler, tiddler_filename)
         except IOError, exc:
-            raise NoTiddlerError('no tiddler for %s: %s' % (tiddler.title, exc))
+            raise NoTiddlerError('no tiddler for "%s": %s' %
+                    (tiddler.title, exc))
 
         revision = run('git', 'log', '-n1', '--format=%H', cwd=self._root) # TODO: should be handled via Dulwich
         tiddler.revision = revision.strip()
