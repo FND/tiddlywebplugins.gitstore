@@ -44,6 +44,19 @@ class Store(TextStore):
             title = urllib.unquote(filename).decode('utf-8')
             yield Tiddler(title, bag.name)
 
+    def list_tiddler_revisions(self, tiddler):
+        tiddler_filename = self._tiddler_base_filename(tiddler)
+
+        try:
+            relative_path = os.path.relpath(tiddler_filename, start=self._root)
+            revisions = run('git', 'log', '--format=%H', relative_path,
+                    cwd=self._root) # TODO: should be handled via Dulwich
+        except subprocess.CalledProcessError, exc:
+            raise NoTiddlerError('unable to list revisions for tiddler "%s": %s'
+                    % (tiddler.title, exc))
+
+        return revisions.splitlines()
+
     def tiddler_get(self, tiddler): # XXX: prone to race condition due to separate Git operation
         tiddler_filename = self._tiddler_base_filename(tiddler)
 
