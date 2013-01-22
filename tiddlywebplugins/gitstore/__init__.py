@@ -18,8 +18,6 @@ from tiddlyweb.stores.text import Store as TextStore
 from tiddlyweb.util import LockError, write_lock, write_unlock, \
         read_utf8_file, write_utf8_file
 
-from .serializer import FullTextSerializer
-
 
 class Store(TextStore):
 
@@ -106,7 +104,7 @@ class Store(TextStore):
             tiddler.created = tiddler.modified
 
         write_utf8_file(tiddler_filename,
-                FullTextSerializer().tiddler_as(tiddler))
+                self.serializer.serialization.tiddler_as(tiddler))
         write_unlock(tiddler_filename)
 
         commit_id = self._commit(tiddler_filename, 'tiddler put') # XXX: message too technical?
