@@ -107,7 +107,7 @@ class Store(TextStore):
                 self.serializer.serialization.tiddler_as(tiddler))
         write_unlock(tiddler_filename)
 
-        commit_id = self._commit(tiddler_filename, 'tiddler put') # XXX: message too technical?
+        commit_id = self._commit('tiddler put', tiddler_filename) # XXX: message too technical?
         tiddler.revision = commit_id # TODO: use abbreviated commit hash
 
     def tiddler_delete(self, tiddler): # XXX: prone to race condition due to separate Git operation
@@ -117,8 +117,25 @@ class Store(TextStore):
 
         os.remove(tiddler_filename)
 
-        self._commit(tiddler_filename, 'tiddler delete') # XXX: message too technical?
+        self._commit('tiddler delete', tiddler_filename) # XXX: message too technical?
 
+    def bag_put(self, bag): # XXX: prone to race condition due to separate Git operation
+        super(Store, self).bag_put(bag)
+
+        bag_path = self._bag_path(bag.name)
+
+        bag_files = self._bag_files(bag_path)
+        keepfile = bag_files[-1]
+        with file(keepfile, 'a'):
+            os.utime(keepfile, None) # `touch`
+
+        self._commit('bag put', *bag_files) # XXX: message too technical?
+
+    def bag_delete(self, bag): # XXX: prone to race condition due to separate Git operation
+        super(Store, self).bag_delete(bag)
+
+        bag_path = self._bag_path(bag.name)
+        self._commit('bag delete', *self._bag_files(bag_path)) # XXX: message too technical?
 
     def _get_tiddler_revision(self, tiddler, tiddler_filename):
         relative_path = os.path.relpath(tiddler_filename, start=self._root)
@@ -132,9 +149,9 @@ class Store(TextStore):
         self.serializer.object = Tiddler(tiddler.title, tiddler.bag)
         return self.serializer.from_string(tiddler_string)
 
-    def _commit(self, filename, message):
+    def _commit(self, message, *filenames):
         """
-        commit changes to given file
+        commit changes to given files
 
         returns the new commit's hash
         """
@@ -146,9 +163,15 @@ class Store(TextStore):
         author = '%s <%s@%s>' % (user, user, host)
         committer = 'tiddlyweb <tiddlyweb@%s>' % host
 
-        relative_path = os.path.relpath(filename, start=self._root)
-        self.repo.stage([relative_path])
+        for filepath in filenames:
+            relpath = os.path.relpath(filepath, start=self._root)
+            self.repo.stage([relpath])
         return self.repo.do_commit(message, author=author, committer=committer)
+
+    def _bag_files(self, bag_path):
+        bag_files = ['description', 'policy',
+                os.path.join('tiddlers', '.gitkeep')]
+        return [os.path.join(bag_path, filename) for filename in bag_files]
 
 
 def run(cmd, *args, **kwargs):

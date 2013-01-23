@@ -101,6 +101,7 @@ def test_tiddler_put():
     info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
             'JohnDoe@example.com tiddlyweb@example.com: tiddler put'
+    assert run('git', 'diff', '--exit-code', cwd=store_root) == ''
 
     # ensure there are no undesirable side-effects
 
@@ -136,6 +137,7 @@ def test_tiddler_delete():
     info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
             'JohnDoe@example.com tiddlyweb@example.com: tiddler delete'
+    assert run('git', 'diff', '--exit-code', cwd=store_root) == ''
 
     missing_tiddler = Tiddler('Bar', bag.name)
     with raises(NoTiddlerError):
