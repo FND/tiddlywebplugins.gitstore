@@ -149,6 +149,18 @@ class Store(TextStore):
         recipe_filename = self._recipe_path(recipe)
         self._commit('recipe delete', recipe_filename) # XXX: message too technical?
 
+    def user_put(self, user): # XXX: prone to race condition due to separate Git operation
+        super(Store, self).user_put(user)
+
+        user_filename = self._user_path(user)
+        self._commit('user put', user_filename) # XXX: message too technical?
+
+    def user_delete(self, user): # XXX: prone to race condition due to separate Git operation
+        super(Store, self).user_delete(user)
+
+        user_filename = self._user_path(user)
+        self._commit('user delete', user_filename) # XXX: message too technical?
+
     def _get_tiddler_revision(self, tiddler, tiddler_filename):
         relative_path = os.path.relpath(tiddler_filename, start=self._root)
         target = '%s:%s' % (tiddler.revision, relative_path)
