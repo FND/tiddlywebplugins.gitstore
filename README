@@ -1,5 +1,5 @@
 gitstore
 [![build status](https://secure.travis-ci.org/FND/tiddlywebplugins.gitstore.png)](http://travis-ci.org/FND/tiddlywebplugins.gitstore)
 
-TiddlyWeb store implementation using Git - based on the default text store,
-this store uses Git to keep track of tiddler revisions
+TiddlyWeb store implementation using Git - based on the default text store, this
+store uses Git to keep track of tiddler revisions
