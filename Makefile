@@ -3,8 +3,8 @@
 release: clean test
 	git diff --exit-code # ensure there are no uncommitted changes
 	git tag -a \
-			-m v`python -c 'from setup import META; print META.__version__'` \
-			v`python -c 'from setup import META; print META.__version__'`
+			-m v`python -c 'from setup import META; print META["version"]'` \
+			v`python -c 'from setup import META; print META["version"]'`
 	git push origin master --tags
 	# XXX: duplicates dist target
 	rm -r dist || true
