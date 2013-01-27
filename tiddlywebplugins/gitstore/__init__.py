@@ -187,7 +187,7 @@ class Store(TextStore):
         host = '%s:%s' % (host['host'], host['port'])
         if host.endswith(':80'): # TODO: use proper URI parsing instead
             host = host[:-3]
-        user = self.environ['tiddlyweb.usersign']['name']
+        user = self.environ.get('tiddlyweb.usersign', {}).get('name', None)
         author = '%s <%s@%s>' % (user, user, host)
         committer = 'tiddlyweb <tiddlyweb@%s>' % host
 
