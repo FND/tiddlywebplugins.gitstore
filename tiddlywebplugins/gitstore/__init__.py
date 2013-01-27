@@ -162,6 +162,9 @@ class Store(TextStore):
         user_filename = self._user_path(user)
         self._commit('user delete', user_filename) # XXX: message too technical?
 
+    def search(self, search_query):
+        raise NotImplementedError
+
     def _get_tiddler_revision(self, tiddler, tiddler_filename):
         relative_path = os.path.relpath(tiddler_filename, start=self._root)
         target = '%s:%s' % (tiddler.revision, relative_path)
