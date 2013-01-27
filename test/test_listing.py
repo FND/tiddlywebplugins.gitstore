@@ -32,6 +32,7 @@ def test_list_tiddlers():
     tiddlers = STORE.list_bag_tiddlers(bag)
     titles = [tiddler.title for tiddler in tiddlers]
 
+    assert len(titles) == 3
     assert 'Foo' in titles
     assert 'Bar' in titles
     assert 'Baz' in titles

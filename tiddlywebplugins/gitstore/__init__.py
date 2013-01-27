@@ -34,7 +34,8 @@ class Store(TextStore):
 
         try:
             tiddler_files = (filename for filename
-                    in self._files_in_dir(tiddlers_dir))
+                    in self._files_in_dir(tiddlers_dir)
+                    if not filename == '.gitkeep')
         except (IOError, OSError), exc:
             raise NoBagError('unable to list tiddlers in bag "%s": %s' %
                     (bag.name, exc))
