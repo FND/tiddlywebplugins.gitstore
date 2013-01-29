@@ -2,6 +2,8 @@ import os
 import re
 import subprocess
 
+from base64 import b64encode
+
 from tiddlyweb.model.bag import Bag
 from tiddlyweb.model.tiddler import Tiddler
 from tiddlyweb.store import NoTiddlerError
@@ -167,3 +169,27 @@ def test_tiddler_creation_info():
     assert tiddler.created != tiddler.modified
     assert len(tiddler.created) == 14
     assert len(tiddler.fields) == 0
+
+
+def test_binary_tiddler():
+    bag = Bag('alpha')
+    STORE.put(bag)
+
+    tiddler = Tiddler('Foo', bag.name)
+    tiddler.type = 'application/binary'
+    tiddler.text = 'lorem ipsum'
+    STORE.put(tiddler)
+    assert tiddler.text == 'lorem ipsum'
+
+    stored_tiddler = Tiddler(tiddler.title, bag.name)
+    stored_tiddler = STORE.get(stored_tiddler)
+    assert stored_tiddler.type == 'application/binary'
+    assert stored_tiddler.text == 'lorem ipsum'
+
+    store_root = os.path.join(TMPDIR, 'test_store')
+    bag_dir = os.path.join(store_root, 'bags', 'alpha')
+    tiddler_file = os.path.join(bag_dir, 'tiddlers', 'Foo')
+    with open(tiddler_file) as fh:
+        contents = fh.read()
+        assert 'type: application/binary' in contents
+        assert b64encode('lorem ipsum') in contents
