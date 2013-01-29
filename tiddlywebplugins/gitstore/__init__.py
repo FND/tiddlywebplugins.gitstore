@@ -46,10 +46,13 @@ class Store(TextStore):
 
     def list_tiddler_revisions(self, tiddler):
         tiddler_filename = self._tiddler_base_filename(tiddler)
+        if not os.path.isfile(tiddler_filename):
+            raise NoTiddlerError('unable to list revisions for tiddler "%s"'
+                    % tiddler.title)
 
         try:
             relative_path = os.path.relpath(tiddler_filename, start=self._root)
-            revisions = run('git', 'log', '--format=%H', relative_path,
+            revisions = run('git', 'log', '--format=%H', '--', relative_path,
                     cwd=self._root) # TODO: should be handled via Dulwich
         except subprocess.CalledProcessError, exc:
             raise NoTiddlerError('unable to list revisions for tiddler "%s": %s'
