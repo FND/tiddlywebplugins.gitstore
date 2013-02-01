@@ -15,9 +15,9 @@ from dulwich.errors import NotGitRepository
 
 from tiddlyweb.model.tiddler import Tiddler
 from tiddlyweb.store import StoreLockError, NoBagError, NoTiddlerError
-from tiddlyweb.stores.text import Store as TextStore
-from tiddlyweb.util import LockError, write_lock, write_unlock, \
-        read_utf8_file, write_utf8_file
+from tiddlyweb.stores.text import Store as TextStore, _encode_filename
+from tiddlyweb.util import (binary_tiddler, LockError, write_lock, write_unlock,
+        read_utf8_file, write_utf8_file)
 
 
 class Store(TextStore):
@@ -75,6 +75,10 @@ class Store(TextStore):
         revision = run('git', 'log', '-n1', '--format=%H', cwd=self._root) # TODO: should be handled via Dulwich
         tiddler.revision = revision.strip()
 
+        if binary_tiddler(tiddler):
+            with open(self._binary_filename(tiddler), 'rb') as fh:
+                tiddler.text = fh.read() # XXX: is it this simple?
+
         return tiddler
 
     def tiddler_put(self, tiddler):
@@ -108,9 +112,24 @@ class Store(TextStore):
             tiddler.creator = tiddler.modifier
             tiddler.created = tiddler.modified
 
+        binary = None # XXX: inelegant
+        if binary_tiddler(tiddler):
+            bin_dir = self._binaries_dir(tiddler.bag)
+            try:
+                os.mkdir(bin_dir)
+            except OSError, exc: # already exists
+                pass
+            with open(self._binary_filename(tiddler), 'wb') as fh:
+                fh.write(tiddler.text) # XXX: is it this simple?
+            binary = tiddler.text
+            tiddler.text = ''
+
         write_utf8_file(tiddler_filename,
                 self.serializer.serialization.tiddler_as(tiddler))
         write_unlock(tiddler_filename)
+
+        if binary is not None: # restore
+            tiddler.text = binary
 
         commit_id = self._commit('tiddler put', tiddler_filename) # XXX: message too technical?
         tiddler.revision = commit_id # TODO: use abbreviated commit hash
@@ -204,6 +223,13 @@ class Store(TextStore):
         bag_files = ['description', 'policy',
                 os.path.join('tiddlers', '.gitkeep')]
         return [os.path.join(bag_path, filename) for filename in bag_files]
+
+    def _binaries_dir(self, bag_name):
+        return os.path.join(self._tiddlers_dir(bag_name), "binaries")
+
+    def _binary_filename(self, tiddler):
+        return os.path.join(self._binaries_dir(tiddler.bag),
+                _encode_filename(tiddler.title))
 
 
 def run(cmd, *args, **kwargs):
