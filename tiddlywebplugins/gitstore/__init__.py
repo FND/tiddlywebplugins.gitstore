@@ -16,6 +16,7 @@ from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 
 from tiddlyweb.model.tiddler import Tiddler
+from tiddlyweb.serializer import TiddlerFormatError
 from tiddlyweb.store import StoreLockError, NoBagError, NoTiddlerError
 from tiddlyweb.stores.text import Store as TextStore, _encode_filename
 from tiddlyweb.util import (binary_tiddler, LockError, write_lock, write_unlock,
@@ -89,7 +90,7 @@ class Store(TextStore):
         tiddler_filename = self._tiddler_base_filename(tiddler)
         bin_dir = self._binaries_dir(tiddler.bag)
         if tiddler_filename == bin_dir:
-            raise IOError("reserved tiddler title") # XXX: IO error undesirable here!?
+            raise TiddlerFormatError("reserved tiddler title")
 
         # the following section is copied almost verbatim from the text store
         # TODO: refactor the text store for granular reusability

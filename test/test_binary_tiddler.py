@@ -3,6 +3,7 @@ import hashlib
 
 from tiddlyweb.model.bag import Bag
 from tiddlyweb.model.tiddler import Tiddler
+from tiddlyweb.serializer import TiddlerFormatError
 
 from tiddlywebplugins.gitstore import run
 
@@ -193,5 +194,5 @@ def test_title_conflicts():
 
         tiddler = Tiddler('_binaries', BAG.name)
         tiddler.text = '...'
-        with raises(IOError):
+        with raises(TiddlerFormatError):
             assert STORE.put(tiddler)
