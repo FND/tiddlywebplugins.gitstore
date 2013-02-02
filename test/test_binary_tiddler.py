@@ -6,6 +6,8 @@ from tiddlyweb.model.tiddler import Tiddler
 
 from tiddlywebplugins.gitstore import run
 
+from pytest import raises
+
 from . import store_setup, store_teardown
 
 
@@ -35,7 +37,7 @@ def test_file_separation():
     bag_dir = os.path.join(STORE_ROOT, 'bags', 'alpha')
     tiddlers_dir = os.path.join(bag_dir, 'tiddlers')
     tiddler_file = os.path.join(tiddlers_dir, 'Foo')
-    bin_dir = os.path.join(tiddlers_dir, 'binaries')
+    bin_dir = os.path.join(tiddlers_dir, '_binaries')
     bin_file = os.path.join(bin_dir, 'Foo')
     assert os.path.isfile(tiddler_file)
     assert os.path.isdir(bin_dir)
@@ -69,7 +71,7 @@ def test_binary_data():
     bag_dir = os.path.join(STORE_ROOT, 'bags', 'alpha')
     tiddlers_dir = os.path.join(bag_dir, 'tiddlers')
     tiddler_file = os.path.join(tiddlers_dir, 'Floppy')
-    bin_dir = os.path.join(tiddlers_dir, 'binaries')
+    bin_dir = os.path.join(tiddlers_dir, '_binaries')
     bin_file = os.path.join(bin_dir, 'Floppy')
 
     source_sha1 = run('sha1sum', '-b', image_filename).split(" ")[0]
@@ -87,7 +89,7 @@ def test_commit():
 
     bag_dir = os.path.join(STORE_ROOT, 'bags', 'alpha')
     tiddler_file = os.path.join(bag_dir, 'tiddlers', 'Bar')
-    binary_file = os.path.join(bag_dir, 'tiddlers', 'binaries', 'Bar')
+    binary_file = os.path.join(bag_dir, 'tiddlers', '_binaries', 'Bar')
 
     trevs = run('git', 'log', '--format=%h', '--', tiddler_file, cwd=STORE_ROOT)
     brevs = run('git', 'log', '--format=%h', '--', binary_file, cwd=STORE_ROOT)
@@ -121,7 +123,7 @@ def test_deletion():
 
     bag_dir = os.path.join(STORE_ROOT, 'bags', 'alpha')
     tiddler_file = os.path.join(bag_dir, 'tiddlers', 'Baz')
-    binary_file = os.path.join(bag_dir, 'tiddlers', 'binaries', 'Baz')
+    binary_file = os.path.join(bag_dir, 'tiddlers', '_binaries', 'Baz')
 
     assert os.path.isfile(tiddler_file)
     assert os.path.isfile(binary_file)
@@ -174,3 +176,22 @@ def test_revision_listing():
     tiddler = Tiddler('FooBar', BAG.name)
     revisions = STORE.list_tiddler_revisions(tiddler)
     assert len(revisions) == 3
+
+
+def test_title_conflicts():
+    bag = Bag('charlie')
+    STORE.put(bag)
+
+    for bag_name in ['alpha', 'charlie']:
+        tiddler = Tiddler('binaries', BAG.name)
+        tiddler.text = '...'
+        STORE.put(tiddler) # should not raise
+
+        stored_tiddler = Tiddler(tiddler.title, BAG.name)
+        stored_tiddler = STORE.get(stored_tiddler)
+        assert stored_tiddler.text == '...'
+
+        tiddler = Tiddler('_binaries', BAG.name)
+        tiddler.text = '...'
+        with raises(IOError):
+            assert STORE.put(tiddler)

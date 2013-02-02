@@ -87,6 +87,9 @@ class Store(TextStore):
 
     def tiddler_put(self, tiddler):
         tiddler_filename = self._tiddler_base_filename(tiddler)
+        bin_dir = self._binaries_dir(tiddler.bag)
+        if tiddler_filename == bin_dir:
+            raise IOError("reserved tiddler title") # XXX: IO error undesirable here!?
 
         # the following section is copied almost verbatim from the text store
         # TODO: refactor the text store for granular reusability
@@ -118,7 +121,6 @@ class Store(TextStore):
 
         binary_data = None
         if binary_tiddler(tiddler):
-            bin_dir = self._binaries_dir(tiddler.bag)
             try:
                 os.mkdir(bin_dir)
             except OSError, exc: # already exists
@@ -238,7 +240,7 @@ class Store(TextStore):
         return [os.path.join(bag_path, filename) for filename in bag_files]
 
     def _binaries_dir(self, bag_name):
-        return os.path.join(self._tiddlers_dir(bag_name), 'binaries')
+        return os.path.join(self._tiddlers_dir(bag_name), '_binaries')
 
     def _binary_filename(self, tiddler):
         return os.path.join(self._binaries_dir(tiddler.bag),
