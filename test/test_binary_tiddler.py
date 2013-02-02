@@ -104,9 +104,32 @@ def test_commit():
     assert len(brevs.splitlines()) == 2
     assert trevs == brevs
 
+    STORE.delete(tiddler)
+
+    trevs = run('git', 'log', '--format=%h', '--', tiddler_file, cwd=STORE_ROOT)
+    brevs = run('git', 'log', '--format=%h', '--', binary_file, cwd=STORE_ROOT)
+    assert len(trevs.splitlines()) == 3
+    assert len(brevs.splitlines()) == 3
+    assert trevs == brevs
+
 
 def test_deletion():
-    pass # TODO: ensure deletion also removes binary
+    tiddler = Tiddler('Baz', BAG.name)
+    tiddler.type = 'application/binary'
+    tiddler.text = 'lorem ipsum'
+    STORE.put(tiddler)
+
+    bag_dir = os.path.join(STORE_ROOT, 'bags', 'alpha')
+    tiddler_file = os.path.join(bag_dir, 'tiddlers', 'Baz')
+    binary_file = os.path.join(bag_dir, 'tiddlers', 'binaries', 'Baz')
+
+    assert os.path.isfile(tiddler_file)
+    assert os.path.isfile(binary_file)
+
+    STORE.delete(tiddler)
+
+    assert not os.path.isfile(tiddler_file)
+    assert not os.path.isfile(binary_file)
 
 
 def test_listing():

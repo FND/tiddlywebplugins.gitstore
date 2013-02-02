@@ -149,6 +149,8 @@ class Store(TextStore):
             raise NoTiddlerError('%s not present' % tiddler_filename)
 
         os.remove(tiddler_filename)
+        if binary_tiddler(tiddler):
+            run('git', 'rm', self._binary_filename(tiddler), cwd=self._root) # TODO: should be handled via Dulwich
 
         self._commit('tiddler delete', tiddler_filename) # XXX: message too technical?
 
