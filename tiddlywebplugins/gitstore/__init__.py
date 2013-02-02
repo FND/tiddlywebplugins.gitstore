@@ -42,9 +42,11 @@ class Store(TextStore):
             raise NoBagError('unable to list tiddlers in bag "%s": %s' %
                     (bag.name, exc))
 
+        bin_dir = os.path.basename(self._binaries_dir(bag.name))
         for filename in tiddler_files:
-            title = urllib.unquote(filename).decode('utf-8')
-            yield Tiddler(title, bag.name)
+            if not filename == bin_dir:
+                title = urllib.unquote(filename).decode('utf-8')
+                yield Tiddler(title, bag.name)
 
     def list_tiddler_revisions(self, tiddler):
         tiddler_filename = self._tiddler_base_filename(tiddler)

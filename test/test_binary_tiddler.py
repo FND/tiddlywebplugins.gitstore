@@ -132,5 +132,45 @@ def test_deletion():
     assert not os.path.isfile(binary_file)
 
 
-def test_listing():
-    pass # TODO: ensure tiddler listings ignore "binaries" directory
+def test_tiddler_listing():
+    bag = Bag('bravo')
+    STORE.put(bag)
+
+    tiddlers = STORE.list_bag_tiddlers(bag)
+    assert len(list(tiddlers)) == 0
+
+    tiddler = Tiddler('Foo', bag.name)
+    tiddler.type = 'application/binary'
+    STORE.put(tiddler)
+
+    tiddlers = STORE.list_bag_tiddlers(bag)
+    titles = [tiddler.title for tiddler in tiddlers]
+    assert len(titles) == 1
+
+    tiddler = Tiddler('Bar', bag.name)
+    STORE.put(tiddler)
+
+    tiddlers = STORE.list_bag_tiddlers(bag)
+    titles = [tiddler.title for tiddler in tiddlers]
+    assert len(titles) == 2
+
+    tiddler = Tiddler('Baz', bag.name)
+    tiddler.type = 'image/png'
+    STORE.put(tiddler)
+
+    tiddlers = STORE.list_bag_tiddlers(bag)
+    titles = [tiddler.title for tiddler in tiddlers]
+    assert len(titles) == 3
+
+
+def test_revision_listing():
+    contents = ['lipsum', 'lorem ipsum', 'lorem ipsum\ndolor sit amet']
+    for i, text in enumerate(contents):
+        tiddler = Tiddler('FooBar', BAG.name)
+        tiddler.text = text
+        tiddler.type = None if i % 2 == 0 else 'application/binary'
+        STORE.put(tiddler)
+
+    tiddler = Tiddler('FooBar', BAG.name)
+    revisions = STORE.list_tiddler_revisions(tiddler)
+    assert len(revisions) == 3
