@@ -79,7 +79,7 @@ def test_tiddler_put():
     store_root = os.path.join(TMPDIR, 'test_store')
 
     bag = Bag('alpha')
-    tiddler = Tiddler('Foo', bag.name)
+    tiddler = Tiddler('Bar', bag.name)
     tiddler.text = 'lorem ipsum'
     tiddler.tags = ['foo', 'bar']
 
@@ -91,7 +91,7 @@ def test_tiddler_put():
 
     STORE.put(tiddler)
 
-    tiddler_file = os.path.join(bag_dir, 'tiddlers', 'Foo')
+    tiddler_file = os.path.join(bag_dir, 'tiddlers', 'Bar')
     assert os.path.isfile(tiddler_file)
     assert re.match('^[a-z0-9]{40}$', tiddler.revision)
     with open(tiddler_file) as fh:
@@ -102,10 +102,12 @@ def test_tiddler_put():
     assert info.strip() == \
             'JohnDoe@example.com tiddlyweb@example.com: tiddler put'
     assert run('git', 'diff', '--exit-code', cwd=store_root) == ''
+    info = run('git', 'log', '--format=%h', '--', tiddler_file, cwd=store_root)
+    assert len(info.splitlines()) == 1
 
     # ensure there are no undesirable side-effects
 
-    tiddler = Tiddler('Foo', bag.name)
+    tiddler = Tiddler('Bar', bag.name)
     tiddler.text = 'lorem ipsum\ndolor sit amet'
     tiddler.tags = ['foo']
     STORE.put(tiddler)
@@ -139,7 +141,7 @@ def test_tiddler_delete():
             'JohnDoe@example.com tiddlyweb@example.com: tiddler delete'
     assert run('git', 'diff', '--exit-code', cwd=store_root) == ''
 
-    missing_tiddler = Tiddler('Bar', bag.name)
+    missing_tiddler = Tiddler('Baz', bag.name)
     with raises(NoTiddlerError):
         STORE.delete(missing_tiddler)
 

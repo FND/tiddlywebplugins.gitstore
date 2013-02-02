@@ -10,6 +10,8 @@ import time
 import subprocess
 import urllib
 
+from datetime import datetime
+
 from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 
@@ -112,7 +114,7 @@ class Store(TextStore):
             tiddler.creator = tiddler.modifier
             tiddler.created = tiddler.modified
 
-        binary = None # XXX: inelegant
+        binary_data = None
         if binary_tiddler(tiddler):
             bin_dir = self._binaries_dir(tiddler.bag)
             try:
@@ -121,17 +123,23 @@ class Store(TextStore):
                 pass
             with open(self._binary_filename(tiddler), 'wb') as fh:
                 fh.write(tiddler.text) # XXX: is it this simple?
-            binary = tiddler.text
-            tiddler.text = ''
+            binary_data = tiddler.text
+            # ensure metadata file changes when binary contents change, thus
+            # making it part of any commit - the metadata file is considered the
+            # authoritative source for revisions
+            tiddler.text = '~.~.~bincue~.~.~ %s' % datetime.now()
 
         write_utf8_file(tiddler_filename,
                 self.serializer.serialization.tiddler_as(tiddler))
         write_unlock(tiddler_filename)
 
-        if binary is not None: # restore
-            tiddler.text = binary
+        commit_files = [tiddler_filename]
 
-        commit_id = self._commit('tiddler put', tiddler_filename) # XXX: message too technical?
+        if binary_data is not None:
+            tiddler.text = binary_data # restore original
+            commit_files.append(self._binary_filename(tiddler)) # XXX: filename has already been calculated before
+
+        commit_id = self._commit('tiddler put', *commit_files) # XXX: message too technical?
         tiddler.revision = commit_id # TODO: use abbreviated commit hash
 
     def tiddler_delete(self, tiddler): # XXX: prone to race condition due to separate Git operation
