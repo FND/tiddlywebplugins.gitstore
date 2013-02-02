@@ -1,4 +1,5 @@
 import os
+import hashlib
 
 from tiddlyweb.model.bag import Bag
 from tiddlyweb.model.tiddler import Tiddler
@@ -55,8 +56,27 @@ def test_file_separation():
     assert stored_tiddler.text == 'lorem ipsum'
 
 
-def binary_data():
-    pass # TODO (use SHA1 comparison)
+def test_binary_data():
+    cwd = os.path.dirname(__file__)
+    image_filename = os.path.join(cwd, 'floppy.jpg')
+
+    tiddler = Tiddler('Floppy', BAG.name)
+    tiddler.type = 'image/jpeg'
+    with open(image_filename, 'rb') as fh:
+        tiddler.text = fh.read()
+    STORE.put(tiddler)
+
+    bag_dir = os.path.join(STORE_ROOT, 'bags', 'alpha')
+    tiddlers_dir = os.path.join(bag_dir, 'tiddlers')
+    tiddler_file = os.path.join(tiddlers_dir, 'Floppy')
+    bin_dir = os.path.join(tiddlers_dir, 'binaries')
+    bin_file = os.path.join(bin_dir, 'Floppy')
+
+    source_sha1 = run('sha1sum', '-b', image_filename).split(" ")[0]
+    bin_sha1 = run('sha1sum', '-b', bin_file).split(" ")[0]
+    assert bin_sha1 == source_sha1
+    stored_tiddler = STORE.get(Tiddler(tiddler.title, tiddler.bag))
+    assert hashlib.sha1(stored_tiddler.text).hexdigest() == source_sha1
 
 
 def test_commit():
