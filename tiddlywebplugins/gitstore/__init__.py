@@ -225,7 +225,7 @@ class Store(TextStore):
         return [os.path.join(bag_path, filename) for filename in bag_files]
 
     def _binaries_dir(self, bag_name):
-        return os.path.join(self._tiddlers_dir(bag_name), "binaries")
+        return os.path.join(self._tiddlers_dir(bag_name), 'binaries')
 
     def _binary_filename(self, tiddler):
         return os.path.join(self._binaries_dir(tiddler.bag),

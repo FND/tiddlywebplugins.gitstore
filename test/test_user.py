@@ -16,7 +16,7 @@ def teardown_module(module):
 
 
 def test_user_put():
-    user = User('John', note="lorem ipsum")
+    user = User('John', note='lorem ipsum')
     STORE.put(user)
 
     store_root = os.path.join(TMPDIR, 'test_store')
@@ -29,7 +29,7 @@ def test_user_put():
 
 
 def test_user_delete():
-    user = User('John', note="lorem ipsum")
+    user = User('John', note='lorem ipsum')
     STORE.put(user)
     STORE.delete(user)
 

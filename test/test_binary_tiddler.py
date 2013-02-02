@@ -40,9 +40,9 @@ def test_file_separation():
         assert 'type: application/binary' in contents
         assert 'lorem ipsum' not in contents
         lines = contents.splitlines()
-        assert ": " in lines[-3] # header
-        assert lines[-2] == "" # separator
-        assert lines[-1] == "" # body
+        assert ': ' in lines[-3] # header
+        assert lines[-2] == '' # separator
+        assert lines[-1] == '' # body
     with open(bin_file) as fh:
         contents = fh.read()
         assert contents == 'lorem ipsum'
