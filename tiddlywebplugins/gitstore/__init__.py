@@ -121,7 +121,8 @@ class Store(TextStore):
                 os.mkdir(bin_dir)
             except OSError, exc: # already exists
                 pass
-            with open(self._binary_filename(tiddler), 'wb') as fh:
+            binary_filename = self._binary_filename(tiddler)
+            with open(binary_filename, 'wb') as fh:
                 fh.write(tiddler.text) # XXX: is it this simple?
             binary_data = tiddler.text
             # ensure metadata file changes when binary contents change, thus
@@ -137,7 +138,7 @@ class Store(TextStore):
 
         if binary_data is not None:
             tiddler.text = binary_data # restore original
-            commit_files.append(self._binary_filename(tiddler)) # XXX: filename has already been calculated before
+            commit_files.append(binary_filename)
 
         commit_id = self._commit('tiddler put', *commit_files) # XXX: message too technical?
         tiddler.revision = commit_id # TODO: use abbreviated commit hash
