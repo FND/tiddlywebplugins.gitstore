@@ -8,8 +8,8 @@ VERSION = '0.5.0'
 AUTHOR = 'FND'
 LICENSE = 'BSD'
 
-DESC = open(os.path.join(os.path.dirname(__file__), 'README')).read()
-DESC = '\n'.join(line for line in DESC.splitlines()
+DESC = os.path.join(os.path.dirname(__file__), 'README')
+DESC = ''.join(line for line in open(DESC)
         if not line.startswith('[![build status](http')) # XXX: fugly hack
 
 META = {
