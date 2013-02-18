@@ -24,7 +24,7 @@ def test_user_put():
     assert os.path.isfile(user_filename)
     info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
-            'JohnDoe@example.com tiddlyweb@example.com: user put'
+            'JohnDoe@example.com tiddlyweb@example.com: user put: John'
     assert run('git', 'diff', '--exit-code', cwd=store_root) == ''
 
 
@@ -38,5 +38,5 @@ def test_user_delete():
     assert not os.path.isfile(user_filename)
     info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
-            'JohnDoe@example.com tiddlyweb@example.com: user delete'
+            'JohnDoe@example.com tiddlyweb@example.com: user delete: John'
     assert run('git', 'diff', '--exit-code', cwd=store_root) == ''

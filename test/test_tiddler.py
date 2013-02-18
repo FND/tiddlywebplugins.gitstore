@@ -101,7 +101,7 @@ def test_tiddler_put():
         assert 'lorem ipsum' in contents
     info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
-            'JohnDoe@example.com tiddlyweb@example.com: tiddler put'
+            'JohnDoe@example.com tiddlyweb@example.com: tiddler put: alpha/Bar'
     assert run('git', 'diff', '--exit-code', cwd=store_root) == ''
     info = run('git', 'log', '--format=%h', '--', tiddler_file, cwd=store_root)
     assert len(info.splitlines()) == 1
@@ -139,7 +139,7 @@ def test_tiddler_delete():
     assert not os.path.isfile(tiddler_file)
     info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
-            'JohnDoe@example.com tiddlyweb@example.com: tiddler delete'
+            'JohnDoe@example.com tiddlyweb@example.com: tiddler delete: alpha/Foo'
     assert run('git', 'diff', '--exit-code', cwd=store_root) == ''
 
     missing_tiddler = Tiddler('Baz', bag.name)

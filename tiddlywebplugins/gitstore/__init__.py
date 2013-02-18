@@ -145,7 +145,8 @@ class Store(TextStore):
             tiddler.text = binary_data # restore original
             commit_files.append(binary_filename)
 
-        commit_id = self._commit('tiddler put', *commit_files) # XXX: message too technical?
+        msg = 'tiddler put: %s/%s' % (tiddler.bag, tiddler.title)
+        commit_id = self._commit(msg, *commit_files)
         tiddler.revision = commit_id # TODO: use abbreviated commit hash
 
     def tiddler_delete(self, tiddler): # XXX: prone to race condition due to separate Git operation
@@ -157,7 +158,8 @@ class Store(TextStore):
         if binary_tiddler(tiddler):
             run('git', 'rm', self._binary_filename(tiddler), cwd=self._root) # TODO: should be handled via Dulwich
 
-        self._commit('tiddler delete', tiddler_filename) # XXX: message too technical?
+        msg = 'tiddler delete: %s/%s' % (tiddler.bag, tiddler.title)
+        self._commit(msg, tiddler_filename)
 
     def bag_put(self, bag): # XXX: prone to race condition due to separate Git operation
         super(Store, self).bag_put(bag)
@@ -169,37 +171,37 @@ class Store(TextStore):
         with file(keepfile, 'a'):
             os.utime(keepfile, None) # `touch`
 
-        self._commit('bag put', *bag_files) # XXX: message too technical?
+        self._commit('bag put: %s' % bag.name, *bag_files)
 
     def bag_delete(self, bag): # XXX: prone to race condition due to separate Git operation
         super(Store, self).bag_delete(bag)
 
         bag_path = self._bag_path(bag.name)
-        self._commit('bag delete', *self._bag_files(bag_path)) # XXX: message too technical?
+        self._commit('bag delete: %s' % bag.name, *self._bag_files(bag_path))
 
     def recipe_put(self, recipe): # XXX: prone to race condition due to separate Git operation
         super(Store, self).recipe_put(recipe)
 
         recipe_filename = self._recipe_path(recipe)
-        self._commit('recipe put', recipe_filename) # XXX: message too technical?
+        self._commit('recipe put: %s' % recipe.name, recipe_filename)
 
     def recipe_delete(self, recipe): # XXX: prone to race condition due to separate Git operation
         super(Store, self).recipe_delete(recipe)
 
         recipe_filename = self._recipe_path(recipe)
-        self._commit('recipe delete', recipe_filename) # XXX: message too technical?
+        self._commit('recipe delete: %s' % recipe.name, recipe_filename)
 
     def user_put(self, user): # XXX: prone to race condition due to separate Git operation
         super(Store, self).user_put(user)
 
         user_filename = self._user_path(user)
-        self._commit('user put', user_filename) # XXX: message too technical?
+        self._commit('user put: %s' % user.usersign, user_filename)
 
     def user_delete(self, user): # XXX: prone to race condition due to separate Git operation
         super(Store, self).user_delete(user)
 
         user_filename = self._user_path(user)
-        self._commit('user delete', user_filename) # XXX: message too technical?
+        self._commit('user delete: %s' % user.usersign, user_filename)
 
     def search(self, search_query):
         raise NotImplementedError

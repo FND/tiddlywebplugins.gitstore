@@ -24,7 +24,7 @@ def test_recipe_put():
     assert os.path.isfile(recipe_filename)
     info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
-            'JohnDoe@example.com tiddlyweb@example.com: recipe put'
+            'JohnDoe@example.com tiddlyweb@example.com: recipe put: omega'
     assert run('git', 'diff', '--exit-code', cwd=store_root) == ''
 
 
@@ -38,5 +38,5 @@ def test_recipe_delete():
     assert not os.path.isfile(recipe_filename)
     info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
-            'JohnDoe@example.com tiddlyweb@example.com: recipe delete'
+            'JohnDoe@example.com tiddlyweb@example.com: recipe delete: omega'
     assert run('git', 'diff', '--exit-code', cwd=store_root) == ''

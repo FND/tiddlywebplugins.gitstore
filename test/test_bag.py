@@ -24,7 +24,7 @@ def test_bag_put():
     assert os.path.isdir(bag_dir)
     info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
-            'JohnDoe@example.com tiddlyweb@example.com: bag put'
+            'JohnDoe@example.com tiddlyweb@example.com: bag put: alpha'
     assert run('git', 'diff', '--exit-code', cwd=store_root) == ''
 
 
@@ -38,5 +38,5 @@ def test_bag_delete():
     assert not os.path.isdir(bag_dir)
     info = run('git', 'log', '-n1', '--format=%ae %ce: %s', cwd=store_root)
     assert info.strip() == \
-            'JohnDoe@example.com tiddlyweb@example.com: bag delete'
+            'JohnDoe@example.com tiddlyweb@example.com: bag delete: alpha'
     assert run('git', 'diff', '--exit-code', cwd=store_root) == ''
