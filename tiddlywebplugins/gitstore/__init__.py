@@ -63,7 +63,7 @@ class Store(TextStore):
             raise NoTiddlerError('unable to list revisions for tiddler "%s": %s'
                     % (tiddler.title, exc))
 
-        return revisions.splitlines()
+        return [rev[:10] for rev in revisions.splitlines()]
 
     def tiddler_get(self, tiddler): # XXX: prone to race condition due to separate Git operation
         tiddler_filename = self._tiddler_base_filename(tiddler)
@@ -78,7 +78,7 @@ class Store(TextStore):
                     (tiddler.title, exc))
 
         revision = run('git', 'log', '-n1', '--format=%H', cwd=self._root) # TODO: should be handled via Dulwich
-        tiddler.revision = revision.strip()
+        tiddler.revision = revision.strip()[:10]
 
         if binary_tiddler(tiddler):
             with open(self._binary_filename(tiddler), 'rb') as fh:
@@ -147,7 +147,7 @@ class Store(TextStore):
 
         msg = 'tiddler put: %s/%s' % (tiddler.bag, tiddler.title)
         commit_id = self._commit(msg, *commit_files)
-        tiddler.revision = commit_id # TODO: use abbreviated commit hash
+        tiddler.revision = commit_id[:10]
 
     def tiddler_delete(self, tiddler): # XXX: prone to race condition due to separate Git operation
         tiddler_filename = self._tiddler_base_filename(tiddler)

@@ -55,7 +55,7 @@ def test_list_tiddler_revisions():
     tiddler = Tiddler('FooBar', bag.name)
     revisions = STORE.list_tiddler_revisions(tiddler)
     assert len(revisions) == 3
-    assert re.match('^[a-z0-9]{40}$', revisions[1])
+    assert re.match('^[a-z0-9]{10}$', revisions[1])
 
     tiddler = Tiddler('N/A', bag.name)
     with raises(NoTiddlerError):
