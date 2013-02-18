@@ -213,8 +213,11 @@ class Store(TextStore):
             raise NoTiddlerError('no revision %s for %s: %s' %
                     (tiddler.revision, tiddler.title, exc))
 
-        self.serializer.object = Tiddler(tiddler.title, tiddler.bag)
-        return self.serializer.from_string(tiddler_string)
+        revision_tiddler = Tiddler(tiddler.title, tiddler.bag)
+        self.serializer.object = revision_tiddler
+        self.serializer.from_string(tiddler_string)
+        revision_tiddler.revision = tiddler.revision
+        return revision_tiddler
 
     def _commit(self, message, *filenames):
         """

@@ -67,6 +67,7 @@ def test_revision_get():
         tiddler.revision = tid['revision']
         tiddler = STORE.get(tiddler)
         assert tiddler.text == tid['text']
+        assert len(tiddler.revision) == 40
         assert len(tiddler.tags) == len(tid['tags'])
 
     tiddler = Tiddler('Foo', bag.name)
