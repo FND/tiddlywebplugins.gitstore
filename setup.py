@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 # XXX: these should go into the package's __init__
-VERSION = '0.5.1'
+VERSION = '0.6.0'
 AUTHOR = 'FND'
 LICENSE = 'BSD'
 
