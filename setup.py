@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 # XXX: these should go into the package's __init__
-VERSION = '0.6.0'
+VERSION = '0.6.1'
 AUTHOR = 'FND'
 LICENSE = 'BSD'
 
@@ -27,7 +27,7 @@ META = {
     'install_requires': ['tiddlyweb>=1.4.0', 'tiddlywebplugins.utils',
             'dulwich'],
     'extras_require': {
-        'testing': ['pytest'],
+        'testing': ['pytest', 'wsgi-intercept', 'httplib2'],
         'coverage': ['figleaf', 'coverage']
     }
 }

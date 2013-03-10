@@ -1,11 +1,18 @@
 import os
 import re
+import json
+
+import httplib2
+import wsgi_intercept
+
+from wsgi_intercept import httplib2_intercept
 
 from tiddlyweb.model.bag import Bag
 from tiddlyweb.model.recipe import Recipe
 from tiddlyweb.model.tiddler import Tiddler
 from tiddlyweb.store import NoBagError, NoTiddlerError
-from tiddlyweb.control import get_tiddlers_from_recipe
+from tiddlyweb.config import config
+from tiddlyweb.web.serve import load_app
 
 from tiddlywebplugins.gitstore import run
 
@@ -58,8 +65,15 @@ def test_list_recipe_tiddlers():
         tiddler = Tiddler(title, bag.name)
         STORE.put(tiddler)
 
-    for tiddler in get_tiddlers_from_recipe(recipe, STORE.environ):
-        assert tiddler.recipe == recipe
+    _initialize_app(STORE.environ['tiddlyweb.config'])
+
+    http = httplib2.Http()
+    response, content = (http.
+            request('http://example.org:8001/recipes/omega/tiddlers.json',
+                    method='GET'))
+
+    for tiddler in json.loads(content):
+        assert tiddler["recipe"] == recipe.name
 
 
 def test_list_tiddler_revisions():
@@ -79,3 +93,18 @@ def test_list_tiddler_revisions():
     tiddler = Tiddler('N/A', bag.name)
     with raises(NoTiddlerError):
         STORE.list_tiddler_revisions(tiddler)
+
+
+def _initialize_app(cfg):
+    config.update(cfg) # XXX: side-effecty
+    config['server_host'] = {
+        'scheme': 'http',
+        'host': 'example.org',
+        'port': '8001',
+    }
+
+    app = load_app()
+    app_fn = lambda: app
+
+    httplib2_intercept.install()
+    wsgi_intercept.add_wsgi_intercept('example.org', 8001, app_fn)
