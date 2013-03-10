@@ -219,6 +219,7 @@ class Store(TextStore):
         self.serializer.object = revision_tiddler
         self.serializer.from_string(tiddler_string)
         revision_tiddler.revision = tiddler.revision
+        revision_tiddler.recipe = tiddler.recipe
         return revision_tiddler
 
     def _commit(self, message, *filenames):

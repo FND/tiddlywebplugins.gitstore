@@ -2,8 +2,10 @@ import os
 import re
 
 from tiddlyweb.model.bag import Bag
+from tiddlyweb.model.recipe import Recipe
 from tiddlyweb.model.tiddler import Tiddler
 from tiddlyweb.store import NoBagError, NoTiddlerError
+from tiddlyweb.control import get_tiddlers_from_recipe
 
 from tiddlywebplugins.gitstore import run
 
@@ -20,7 +22,7 @@ def teardown_module(module):
     store_teardown(module.TMPDIR)
 
 
-def test_list_tiddlers():
+def test_list_bag_tiddlers():
     bag = Bag('alpha')
     STORE.put(bag)
 
@@ -41,6 +43,23 @@ def test_list_tiddlers():
     tiddlers = STORE.list_bag_tiddlers(bag)
     with raises(NoBagError):
         list(tiddlers)
+
+
+def test_list_recipe_tiddlers():
+    bag = Bag('alpha')
+    STORE.put(bag)
+
+    recipe = Recipe('omega')
+    recipe.set_recipe([('alpha', '')])
+    recipe.store = STORE
+    STORE.put(recipe)
+
+    for title in ['Foo', 'Bar', 'Baz']:
+        tiddler = Tiddler(title, bag.name)
+        STORE.put(tiddler)
+
+    for tiddler in get_tiddlers_from_recipe(recipe, STORE.environ):
+        assert tiddler.recipe == recipe
 
 
 def test_list_tiddler_revisions():
