@@ -103,8 +103,5 @@ def _initialize_app(cfg):
         'port': '8001',
     }
 
-    app = load_app()
-    app_fn = lambda: app
-
     httplib2_intercept.install()
-    wsgi_intercept.add_wsgi_intercept('example.org', 8001, app_fn)
+    wsgi_intercept.add_wsgi_intercept('example.org', 8001, lambda: load_app())
