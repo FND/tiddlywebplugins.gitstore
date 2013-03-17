@@ -2,9 +2,29 @@ import os
 import shutil
 import tempfile
 
+import wsgi_intercept
+
 import mangler
 
+from wsgi_intercept import httplib2_intercept
+
 from tiddlyweb.store import Store
+from tiddlyweb.config import config
+from tiddlyweb.web.serve import load_app
+
+
+def initialize_app(cfg):
+    config.update(cfg) # XXX: side-effecty
+    config['server_host'] = {
+        'scheme': 'http',
+        'host': 'example.org',
+        'port': '8001',
+    }
+
+    httplib2_intercept.install()
+    wsgi_intercept.add_wsgi_intercept('example.org', 8001, lambda: load_app())
+
+    return config
 
 
 def store_setup():
