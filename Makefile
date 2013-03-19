@@ -1,4 +1,4 @@
-.PHONY: release dist readme test clean
+.PHONY: release dist test clean
 
 release: clean test
 	git diff --exit-code # ensure there are no uncommitted changes
@@ -18,7 +18,7 @@ test: clean
 	py.test -x --tb=short test
 
 clean:
-	find . -name "*.pyc" | xargs rm || true
+	find . -name "*.pyc" -print0 | xargs -0 rm || true
 	rm -rf tiddlywebplugins.gitstore.egg-info
 	rm -rf html .figleaf coverage.lst # figleaf
 	rm -rf htmlcov .coverage # coverage

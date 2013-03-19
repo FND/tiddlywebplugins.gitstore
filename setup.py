@@ -18,7 +18,7 @@ META = {
     'version': VERSION,
     'description': 'TiddlyWeb store implementation using Git',
     'long_description': DESC,
-    'license': 'BSD',
+    'license': LICENSE,
     'author': AUTHOR,
     'packages': find_packages(exclude=['test']),
     'platforms': 'Posix; MacOS X; Windows',
