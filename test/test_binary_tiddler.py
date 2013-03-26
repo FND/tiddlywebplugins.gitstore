@@ -4,6 +4,7 @@ import hashlib
 from tiddlyweb.model.bag import Bag
 from tiddlyweb.model.tiddler import Tiddler
 from tiddlyweb.serializer import TiddlerFormatError
+from tiddlyweb.util import sha
 
 from tiddlywebplugins.gitstore import run
 
@@ -75,11 +76,11 @@ def test_binary_data():
     bin_dir = os.path.join(tiddlers_dir, '_binaries')
     bin_file = os.path.join(bin_dir, 'Floppy')
 
-    source_sha1 = run('sha1sum', '-b', image_filename).split(" ")[0]
-    bin_sha1 = run('sha1sum', '-b', bin_file).split(" ")[0]
+    source_sha1 = file_checksum(image_filename)
+    bin_sha1 = file_checksum(bin_file)
     assert bin_sha1 == source_sha1
     stored_tiddler = STORE.get(Tiddler(tiddler.title, tiddler.bag))
-    assert hashlib.sha1(stored_tiddler.text).hexdigest() == source_sha1
+    assert sha(stored_tiddler.text).hexdigest() == source_sha1
 
 
 def test_commit():
@@ -196,3 +197,7 @@ def test_title_conflicts():
         tiddler.text = '...'
         with raises(TiddlerFormatError):
             assert STORE.put(tiddler)
+
+
+def file_checksum(filename):
+    return sha(open(filename).read()).hexdigest()
