@@ -31,7 +31,7 @@ def test_lifecycle():
 
     response, content = _get_tiddler(title, bag)
     assert response.status == 200
-    assert response['etag'] == etag
+    assert response['etag'].split(':')[0] == etag.split(':')[0]
     assert content.endswith('\n\nlorem ipsum\n')
 
     response = _delete_tiddler(title, bag, etag)
@@ -47,7 +47,7 @@ def test_lifecycle():
 
     response, content = _get_tiddler(title, bag)
     assert response.status == 200
-    assert response['etag'] == etag
+    assert response['etag'].split(':')[0] == etag.split(':')[0]
     assert content.endswith('\n\nlorem ipsum\n')
 
     response = _put_tiddler(title, bag, 'lorem ipsum\ndolor sit amet')
@@ -56,7 +56,7 @@ def test_lifecycle():
 
     response, content = _get_tiddler(title, bag)
     assert response.status == 200
-    assert response['etag'] == etag
+    assert response['etag'].split(':')[0] == etag.split(':')[0]
     assert content.endswith('\n\nlorem ipsum\ndolor sit amet\n')
 
     # create, create, delete
@@ -65,18 +65,19 @@ def test_lifecycle():
 
     response = _put_tiddler(title, bag, 'lorem ipsum')
     assert response.status == 204
-    etag = response['etag']
+    etag_put = response['etag']
 
     response, content = _get_tiddler(title, bag)
+    etag_get = response['etag'] 
     assert response.status == 200
-    assert response['etag'] == etag
+    assert response['etag'].split(':')[0] == etag_put.split(':')[0]
     assert content.endswith('\n\nlorem ipsum\n')
 
     # create unrelated tiddler
     response = _put_tiddler('Bar', bag, 'lorem ipsum')
     assert response.status == 204
 
-    response = _delete_tiddler(title, bag, etag)
+    response = _delete_tiddler(title, bag, etag_put)
     assert response.status == 204
 
 
