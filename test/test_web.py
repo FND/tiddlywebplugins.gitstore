@@ -68,7 +68,6 @@ def test_lifecycle():
     etag_put = response['etag']
 
     response, content = _get_tiddler(title, bag)
-    etag_get = response['etag']
     assert response.status == 200
     assert response['etag'].split(':')[0] == etag_put.split(':')[0]
     assert content.endswith('\n\nlorem ipsum\n')
