@@ -77,7 +77,9 @@ class Store(TextStore):
             raise NoTiddlerError('no tiddler for "%s": %s' %
                     (tiddler.title, exc))
 
-        revision = run('git', 'log', '-n1', '--format=%H', cwd=self._root) # TODO: should be handled via Dulwich
+
+        relative_path = os.path.relpath(tiddler_filename, start=self._root)
+        revision = run('git', 'log', '-n1', '--format=%H', '--', relative_path, cwd=self._root) # TODO: should be handled via Dulwich
         tiddler.revision = revision.strip()[:10]
 
         if binary_tiddler(tiddler):
