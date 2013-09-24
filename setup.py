@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 # XXX: these should go into the package's __init__
-VERSION = '0.6.2'
+VERSION = '0.6.3'
 AUTHOR = 'FND'
 LICENSE = 'BSD'
 
@@ -21,6 +21,7 @@ META = {
     'license': LICENSE,
     'author': AUTHOR,
     'packages': find_packages(exclude=['test']),
+    'namespace_packages': ['tiddlywebplugins'],
     'platforms': 'Posix; MacOS X; Windows',
     'include_package_data': False,
     'zip_safe': False,
