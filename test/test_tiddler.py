@@ -186,3 +186,17 @@ def test_binary_tiddler():
     stored_tiddler = STORE.get(stored_tiddler)
     assert stored_tiddler.type == 'application/binary'
     assert stored_tiddler.text == 'lorem ipsum'
+
+
+def test_non_ascii_names():
+    store_root = os.path.join(TMPDIR, 'test_store')
+
+    name = 'lorem ipsum – dolor sit amet' # ndash
+
+    bag = Bag(name)
+    tiddler = Tiddler(name, bag.name)
+    tiddler.text = name
+
+    # must not raise UnicodeDecodeError
+    STORE.put(bag)
+    STORE.put(tiddler)
