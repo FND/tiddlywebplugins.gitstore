@@ -1,3 +1,5 @@
+# coding=UTF-8
+
 import os
 import re
 import subprocess
@@ -191,7 +193,7 @@ def test_binary_tiddler():
 def test_non_ascii_names():
     store_root = os.path.join(TMPDIR, 'test_store')
 
-    name = 'lorem ipsum – dolor sit amet' # ndash
+    name = u'lorem ipsum – dolor sit amet' # ndash
 
     bag = Bag(name)
     tiddler = Tiddler(name, bag.name)
