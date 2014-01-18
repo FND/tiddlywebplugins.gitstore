@@ -241,7 +241,8 @@ class Store(TextStore):
         for filepath in filenames:
             relpath = os.path.relpath(filepath, start=self._root)
             self.repo.stage([relpath])
-        return self.repo.do_commit(message, author=author, committer=committer)
+        return self.repo.do_commit(message.encode("UTF-8"), author=author,
+                committer=committer)
 
     def _bag_files(self, bag_path):
         bag_files = ['description', 'policy',

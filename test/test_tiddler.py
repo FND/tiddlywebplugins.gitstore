@@ -190,7 +190,7 @@ def test_binary_tiddler():
     assert stored_tiddler.text == 'lorem ipsum'
 
 
-def test_non_ascii_names():
+def test_unicode_strings():
     store_root = os.path.join(TMPDIR, 'test_store')
 
     name = u'lorem ipsum – dolor sit amet' # ndash
@@ -202,3 +202,9 @@ def test_non_ascii_names():
     # must not raise UnicodeDecodeError
     STORE.put(bag)
     STORE.put(tiddler)
+
+    tid = Tiddler(tiddler.title, bag.name)
+    tid = STORE.get(tid)
+    assert tid.bag == name
+    assert tid.title == name
+    assert tid.text == name
